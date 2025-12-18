@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Expense Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    :root{
+      --bg:#020617;
+      --bg-soft:#020617;
+      --surface:#020617;
+      --card:#0f172a;
+      --card-soft:#020617;
+      --text:#f9fafb;
+      --muted:#9ca3af;
+      --primary:#6366f1;
+      --primary-soft:#4f46e5;
+      --accent:#22c55e;
+      --accent-soft:#16a34a;
+      --danger:#f97373;
+      --danger-strong:#ef4444;
+      --border:#1f2937;
+      --border-soft:rgba(148,163,184,0.35);
+      --chip-bg:#0b1120;
+      --chip-border:#1d4ed8;
+      --radius-lg:18px;
+      --radius-md:12px;
+      --shadow-soft:0 18px 45px rgba(15,23,42,0.7);
+      --shadow-chip:0 0 0 1px rgba(37,99,235,0.4);
+      --shadow-btn:0 10px 30px rgba(79,70,229,0.55);
+      --trs:0.22s cubic-bezier(0.19, 0.58, 0.24, 1);
+    }
+
+    *{box-sizing:border-box;}
+
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at -10% -10%,rgba(59,130,246,0.33),transparent 60%),
+        radial-gradient(900px 600px at 110% 0%,rgba(16,185,129,0.32),transparent 60%),
+        radial-gradient(700px 500px at 50% 120%,rgba(92,64,251,0.45),transparent 65%),
+        linear-gradient(to bottom,#020617 5%,#020617 55%,#020617 100%);
+      min-height:100vh;
+      line-height:1.6;
+    }
+
+    .container{
+      max-width:1120px;
+      margin:0 auto;
+      padding:0 18px;
+    }
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:40;
+      backdrop-filter:blur(18px) saturate(180%);
+      background:linear-gradient(to bottom,rgba(15,23,42,0.96),rgba(15,23,42,0.85));
+      border-bottom:1px solid rgba(148,163,184,0.35);
+    }
+
+    .header-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px 0 10px;
+      gap:12px;
+    }
+
+    .brand{
+      font-weight:800;
+      font-size:1.45rem;
+      letter-spacing:-0.03em;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:conic-gradient(from 210deg,#22c55e,#22c55e,#22c55e,#6366f1,#22c55e);
+      -webkit-background-clip:text;
+      color:transparent;
+    }
+
+    .brand-pill{
+      padding:3px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.4);
+      background:rgba(15,23,42,0.8);
+      color:var(--muted);
+      font-size:0.68rem;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+    }
+
+    .header-buttons{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .tabs-wrap{
+      padding-bottom:10px;
+    }
+
+    .tabs{
+      display:flex;
+      gap:8px;
+      padding:4px;
+      border-radius:999px;
+      background:radial-gradient(circle at 0% 0%,rgba(59,130,246,0.22),transparent 55%),
+                 radial-gradient(circle at 100% 0%,rgba(16,185,129,0.18),transparent 55%),
+                 rgba(15,23,42,0.95);
+      border:1px solid rgba(148,163,184,0.45);
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    .tab{
+      padding:8px 16px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:0.86rem;
+      font-weight:600;
+      letter-spacing:0.03em;
+      text-transform:uppercase;
+      white-space:nowrap;
+      color:var(--muted);
+      border:1px solid transparent;
+      background:transparent;
+      transition:all var(--trs);
+    }
+
+    .tab:hover{
+      color:var(--text);
+      background:rgba(15,23,42,0.8);
+      border-color:rgba(148,163,184,0.5);
+    }
+
+    .tab.active{
+      background:linear-gradient(135deg,#6366f1,#22c55e);
+      color:white;
+      border-color:transparent;
+      box-shadow:0 10px 30px rgba(79,70,229,0.85);
+    }
+
+    .tab.disabled{
+      opacity:0.5;
+      cursor:not-allowed;
+    }
+
+    main{
+      padding:28px 0 34px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:22px;
+    }
+
+    .card{
+      border-radius:var(--radius-lg);
+      padding:20px 18px 20px;
+      background:radial-gradient(circle at top left,rgba(56,189,248,0.13),transparent 55%),
+                 radial-gradient(circle at bottom right,rgba(129,140,248,0.20),transparent 55%),
+                 rgba(15,23,42,0.96);
+      box-shadow:var(--shadow-soft);
+      border:1px solid rgba(148,163,184,0.48);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .card::before{
+      content:'';
+      position:absolute;
+      inset:-1px;
+      border-radius:inherit;
+      background:conic-gradient(from 180deg,transparent,rgba(59,130,246,0.55),transparent,rgba(34,197,94,0.6),transparent);
+      opacity:0.35;
+      mix-blend-mode:soft-light;
+      pointer-events:none;
+    }
+
+    .card-inner{
+      position:relative;
+      z-index:1;
+    }
+
+    .card h3{
+      margin:0 0 12px;
+      font-size:1.05rem;
+      letter-spacing:0.02em;
+      text-transform:uppercase;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .card h3 span.badge{
+      font-size:0.65rem;
+      padding:3px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.6);
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      color:var(--muted);
+    }
+
+    .muted{color:var(--muted);font-size:0.87rem;}
+
+    .row{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      flex:1;
+      min-width:210px;
+      margin-top:6px;
+    }
+
+    label{
+      font-size:0.78rem;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      font-weight:600;
+    }
+
+    input,select,textarea{
+      padding:10px 12px;
+      border-radius:var(--radius-md);
+      border:1px solid rgba(148,163,184,0.5);
+      background:radial-gradient(circle at top left,rgba(37,99,235,0.25),transparent 55%),
+                 rgba(15,23,42,0.95);
+      color:var(--text);
+      font-size:0.9rem;
+      outline:none;
+      transition:all var(--trs);
+    }
+
+    input:focus,select:focus,textarea:focus{
+      border-color:#4f46e5;
+      box-shadow:0 0 0 1px rgba(129,140,248,0.7),0 0 0 4px rgba(79,70,229,0.45);
+    }
+
+    input::placeholder{
+      color:rgba(148,163,184,0.65);
+    }
+
+    input:disabled{
+      opacity:0.6;
+    }
+
+    .btn{
+      padding:9px 16px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.7);
+      background:radial-gradient(circle at top left,rgba(148,163,184,0.45),transparent 60%),rgba(15,23,42,0.96);
+      color:var(--text);
+      font-size:0.86rem;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      cursor:pointer;
+      transition:all var(--trs);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      border-color:#e5e7eb;
+      background:radial-gradient(circle at top left,rgba(226,232,240,0.7),transparent 62%),rgba(15,23,42,0.98);
+      box-shadow:0 14px 30px rgba(15,23,42,0.9);
+    }
+
+    .btn:active{
+      transform:translateY(1px) scale(0.98);
+      box-shadow:none;
+    }
+
+    .btn.primary{
+      background:linear-gradient(130deg,#6366f1,#22c55e);
+      border-color:transparent;
+      color:white;
+      box-shadow:var(--shadow-btn);
+    }
+
+    .btn.primary:hover{
+      background:linear-gradient(130deg,#4f46e5,#16a34a);
+    }
+
+    .btn.danger{
+      background:radial-gradient(circle at top left,rgba(248,113,113,0.3),transparent 55%),
+                 rgba(127,29,29,0.96);
+      border-color:rgba(248,113,113,0.85);
+      color:#fee2e2;
+      box-shadow:0 10px 25px rgba(220,38,38,0.6);
+    }
+
+    .btn.danger:hover{
+      background:radial-gradient(circle at top left,rgba(248,113,113,0.55),transparent 55%),
+                 #b91c1c;
+      border-color:#fecaca;
+    }
+
+    .btn:disabled{
+      cursor:not-allowed;
+      opacity:0.55;
+      box-shadow:none;
+      transform:none;
+    }
+
+    ul.list{list-style:none;margin:0;padding:0;}
+
+    .item{
+      display:grid;
+      grid-template-columns:110px 1fr 130px 110px 110px;
+      gap:10px;
+      align-items:center;
+      padding:10px 0;
+      border-bottom:1px dashed rgba(148,163,184,0.4);
+      font-size:0.9rem;
+    }
+
+    .item.hdr{
+      font-size:0.75rem;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      border-bottom:1px solid rgba(148,163,184,0.6);
+    }
+
+    .right{text-align:right;}
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      padding:5px 11px;
+      border-radius:999px;
+      border:1px solid var(--chip-border);
+      background:radial-gradient(circle at top left,rgba(37,99,235,0.5),transparent 65%),
+                 rgba(15,23,42,0.98);
+      color:#e5f2ff;
+      font-size:0.78rem;
+      font-weight:600;
+      margin:0 8px 8px 0;
+      box-shadow:var(--shadow-chip);
+    }
+
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+      gap:12px;
+      margin-top:8px;
+    }
+
+    .kpi{
+      border-radius:14px;
+      padding:11px 12px 10px;
+      border:1px solid rgba(148,163,184,0.55);
+      background:radial-gradient(circle at top left,rgba(79,70,229,0.4),transparent 65%),
+                 rgba(15,23,42,0.98);
+      text-align:left;
+    }
+
+    .kpi .muted{font-size:0.76rem;text-transform:uppercase;letter-spacing:0.09em;}
+
+    .kpi strong{display:block;margin-top:3px;font-size:1.45rem;}
+
+    .sticky-header{max-height:420px;overflow:auto;}
+
+    .hidden{display:none;}
+
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr;}
+      .card{grid-column:span 12!important;}
+      .item{grid-template-columns:1fr auto;gap:6px;}
+      .item.hdr{display:none;}
+      .item div:nth-child(1){font-size:0.75rem;color:var(--muted);}
+      .item div:nth-child(2){font-weight:600;}
+      .item div:nth-child(3){display:none;}
+      .item div:nth-child(4){font-weight:700;color:#fbbf24;}
+      .item div:nth-child(5){display:none;}
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <div class="header-top">
+        <div class="brand">
+          Expense Manager
+          <span class="brand-pill">Multi-View Tracker</span>
+        </div>
+        <div class="header-buttons">
+          <button id="btnUser" class="btn" onclick="openTab('user')">User</button>
+          <button id="btnLog" class="btn" onclick="openTab('log')">Log</button>
+          <button id="btnView" class="btn" onclick="openTab('view')">View</button>
+          <button id="btnReports" class="btn" onclick="openTab('reports')">Reports</button>
+        </div>
+      </div>
+
+      <div class="tabs-wrap">
+        <div class="tabs">
+          <div id="tab-user" class="tab active" onclick="openTab('user')">User Management</div>
+          <div id="tab-log" class="tab" onclick="openTab('log')">Expense Logging</div>
+          <div id="tab-view" class="tab" onclick="openTab('view')">Expense Viewing</div>
+          <div id="tab-reports" class="tab" onclick="openTab('reports')">Reports</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- User -->
+    <section id="panel-user">
+      <div class="grid">
+        <div class="card" style="grid-column:span 6;">
+          <div class="card-inner">
+            <h3>Register <span class="badge">Access</span></h3>
+            <p class="muted">Create a secure account to start tracking your expenses.</p>
+            <div class="field">
+              <label>Username</label>
+              <input id="regUsername" placeholder="Choose a username" />
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <input id="regPassword" type="password" placeholder="Choose a password" />
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" onclick="register()">Create account</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="grid-column:span 6;">
+          <div class="card-inner">
+            <h3>Login <span class="badge">Session</span></h3>
+            <p class="muted">Sign in to view, add, and analyze your expenses.</p>
+            <div class="field">
+              <label>Username</label>
+              <input id="loginUsername" placeholder="Enter username" />
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <input id="loginPassword" type="password" placeholder="Enter password" />
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn primary" onclick="login()">Login</button>
+              <button class="btn" onclick="logout()">Logout</button>
+            </div>
+            <p class="muted" style="margin-top:8px;">Status: <span id="statusText">Not authenticated</span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Logging -->
+    <section id="panel-log" class="hidden">
+      <div class="grid">
+        <div class="card" style="grid-column:span 5;">
+          <div class="card-inner">
+            <h3>Add Expense <span class="badge">Capture</span></h3>
+            <div class="field">
+              <label>Description</label>
+              <input id="description" placeholder="e.g., Lunch with friends" />
+            </div>
+            <div class="row">
+              <div class="field">
+                <label>Amount</label>
+                <input id="amount" type="number" placeholder="0.00" />
+              </div>
+              <div class="field">
+                <label>Date</label>
+                <input id="date" type="date" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Category</label>
+              <input id="category" placeholder="e.g., Food, Travel" />
+            </div>
+            <div class="row" style="margin-top:12px;">
+              <button id="btnAdd" class="btn primary" onclick="addExpense()">Add</button>
+              <button class="btn" onclick="clearExpenseForm()">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="grid-column:span 7;">
+          <div class="card-inner">
+            <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <h3 style="margin:0;">Recent Expenses</h3>
+              <span class="muted" style="font-size:0.8rem;">Latest on top</span>
+            </div>
+            <div class="sticky-header">
+              <ul class="list" id="expenseList">
+                <li class="item hdr">
+                  <div>Date</div>
+                  <div>Description</div>
+                  <div>Category</div>
+                  <div class="right">Amount</div>
+                  <div class="right">Actions</div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Viewing -->
+    <section id="panel-view" class="hidden">
+      <div class="grid">
+        <div class="card" style="grid-column:span 6;">
+          <div class="card-inner">
+            <div class="row" style="justify-content:space-between;align-items:center;">
+              <h3 id="dailyHeader" style="margin:0;">Daily Track <span class="badge">Day</span></h3>
+              <div class="row" style="gap:6px;">
+                <button class="btn" onclick="renderDailyView(-1)">&larr; Prev</button>
+                <button class="btn primary" onclick="renderDailyView(0)">Today</button>
+                <button class="btn" onclick="renderDailyView(1)">Next &rarr;</button>
+              </div>
+            </div>
+            <div class="kpis">
+              <div class="kpi">
+                <span class="muted">Total</span>
+                <strong id="dailyTotal">0</strong>
+              </div>
+            </div>
+            <div id="dailyCats" style="margin:10px 0 8px;"></div>
+            <ul class="list" id="dailyList"></ul>
+          </div>
+        </div>
+
+        <div class="card" style="grid-column:span 6;">
+          <div class="card-inner">
+            <div class="row" style="justify-content:space-between;align-items:center;">
+              <h3 id="monthlyHeader" style="margin:0;">Monthly Track <span class="badge">Month</span></h3>
+              <div class="row" style="gap:6px;">
+                <button class="btn" onclick="renderMonthlyView(-1)">&larr; Prev</button>
+                <button class="btn primary" onclick="renderMonthlyView(0)">This Month</button>
+                <button class="btn" onclick="renderMonthlyView(1)">Next &rarr;</button>
+              </div>
+            </div>
+            <div class="kpis">
+              <div class="kpi">
+                <span class="muted">Total</span>
+                <strong id="monthlyTotal">0</strong>
+              </div>
+            </div>
+            <div id="monthCats" style="margin:10px 0 8px;"></div>
+            <ul class="list" id="monthDays"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reports -->
+    <section id="panel-reports" class="hidden">
+      <div class="grid">
+        <div class="card" style="grid-column:span 5;">
+          <div class="card-inner">
+            <h3>Range <span class="badge">Filter</span></h3>
+            <div class="row">
+              <div class="field">
+                <label>From</label>
+                <input id="rFrom" type="date" />
+              </div>
+              <div class="field">
+                <label>To</label>
+                <input id="rTo" type="date" />
+              </div>
+            </div>
+            <div class="row" style="margin-top:4px;">
+              <button class="btn" onclick="presetRange('thisMonth')">This Month</button>
+              <button class="btn" onclick="presetRange('lastMonth')">Last Month</button>
+              <button class="btn" onclick="presetRange('last90')">Last 90 Days</button>
+            </div>
+            <div class="row" style="margin-top:12px;">
+              <button class="btn primary" onclick="loadReport()">Generate</button>
+              <button class="btn" onclick="downloadCSV()">Download CSV</button>
+            </div>
+            <p class="muted" style="margin-top:8px;">Summarize and export spending for any date range.</p>
+          </div>
+        </div>
+
+        <div class="card" style="grid-column:span 7;">
+          <div class="card-inner">
+            <h3>Summary <span class="badge">Insights</span></h3>
+            <div class="kpis">
+              <div class="kpi">
+                <span class="muted">Total</span>
+                <strong id="rpTotal">0</strong>
+              </div>
+              <div class="kpi">
+                <span class="muted">Avg / Day</span>
+                <strong id="rpAvgDay">0</strong>
+              </div>
+              <div class="kpi">
+                <span class="muted">Transactions</span>
+                <strong id="rpCount">0</strong>
+              </div>
+              <div class="kpi">
+                <span class="muted">Largest</span>
+                <strong id="rpLargest">0</strong>
+              </div>
+            </div>
+            <h4 class="muted" style="margin:16px 0 8px;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.1em;">By Category</h4>
+            <div id="rpCats" style="margin-top:4px;"></div>
+            <pre id="rpRaw" class="hidden"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- JS: unchanged logic, just pasted from your last working version -->
+  <script>
+    const API_URL = "http://localhost:5000/api";
+    let token = null;
+    let userId = null;
+    let expensesCache = [];
+    let viewDailyDate = new Date();
+    let viewMonthYear = new Date().getFullYear();
+    let viewMonthIndex = new Date().getMonth();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setTabsDisabled(true);
+      showPanel('user');
+    });
+
+    function startOfToday(){
+      const d = new Date();
+      d.setHours(0,0,0,0);
+      return d;
+    }
+
+    function setTabsDisabled(disabled){
+      ['tab-log','tab-view','tab-reports'].forEach(id=>{
+        const el = document.getElementById(id); if(!el) return;
+        if(disabled){ el.classList.add('disabled'); } else { el.classList.remove('disabled'); }
+      });
+      ['btnLog','btnView','btnReports'].forEach(id=>{
+        const b = document.getElementById(id); if(b) b.disabled = disabled;
+      });
+    }
+
+    function showPanel(name){
+      ['user','log','view','reports'].forEach(n=>{
+        document.getElementById('panel-'+n).classList.toggle('hidden', n!==name);
+        document.getElementById('tab-'+n).classList.toggle('active', n===name);
+      });
+    }
+
+    function openTab(name){
+      if(!token && name!=='user'){ alert('Please login first'); showPanel('user'); return; }
+      showPanel(name);
+      if(name==='log'){ loadExpenses(); }
+      if(name==='view'){ initViewing(); refreshSummaries(); }
+      if(name==='reports'){ presetRange('thisMonth'); loadReport(); }
+    }
+
+    async function register(){
+      const username = document.getElementById('regUsername').value.trim();
+      const password = document.getElementById('regPassword').value;
+      if(!username || !password) return alert('Enter username and password');
+      const res = await fetch(`${API_URL}/users/register`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      alert(data.message || data.error);
+    }
+
+    async function login(){
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const res = await fetch(`${API_URL}/users/login`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if(data.token){
+        token = data.token; userId = data.userId;
+        document.getElementById('statusText').textContent = 'Authenticated';
+        setTabsDisabled(false); openTab('log'); await loadExpenses();
+      } else {
+        alert(data.message || data.error || 'Login failed');
+      }
+    }
+
+    function logout(){
+      token=null; userId=null; expensesCache=[];
+      document.getElementById('statusText').textContent='Not authenticated';
+      setTabsDisabled(true); showPanel('user');
+    }
+
+    function clearExpenseForm(){
+      ['description','amount','date','category'].forEach(id=>document.getElementById(id).value='');
+    }
+
+    async function addExpense(){
+      if(!token) return alert('Please login first');
+      const description = document.getElementById('description').value.trim();
+      const amount = parseFloat(document.getElementById('amount').value);
+      const dateStr = document.getElementById('date').value;
+      const date = dateStr ? new Date(dateStr) : new Date();
+      const category = (document.getElementById('category').value || 'Other').trim();
+      if(!description || !amount || isNaN(amount)) return alert('Enter description and valid amount');
+
+      const res = await fetch(`${API_URL}/expenses`, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
+        body: JSON.stringify({ description, amount, category, date })
+      });
+      const data = await res.json();
+      if(!res.ok) return alert(data.error || data.message || 'Error adding expense');
+      clearExpenseForm(); await loadExpenses();
+    }
+
+    function renderExpenseList(rows){
+      const list = document.getElementById('expenseList');
+      list.querySelectorAll('.item:not(.hdr)').forEach(el => el.remove());
+      rows.forEach(exp=>{
+        const li = document.createElement('li'); li.className='item';
+        li.innerHTML = `
+          <div>${new Date(exp.date).toLocaleDateString()}</div>
+          <div>${exp.description}</div>
+          <div>${exp.category}</div>
+          <div class="right">${Number(exp.amount).toFixed(2)}</div>
+          <div class="right"><button class="btn danger" onclick="deleteExpense('${exp._id}')">Delete</button></div>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    async function loadExpenses(){
+      if(!token) return;
+      const res = await fetch(`${API_URL}/expenses`, { headers:{ 'Authorization':`Bearer ${token}` }});
+      const data = await res.json();
+      expensesCache = Array.isArray(data) ? data : [];
+      renderExpenseList(expensesCache);
+    }
+
+    async function deleteExpense(id){
+      if(!confirm('Delete this expense?')) return;
+      const res = await fetch(`${API_URL}/expenses/${id}`, {
+        method:'DELETE',
+        headers:{ 'Authorization':`Bearer ${token}` }
+      });
+      const data = await res.json();
+      if(!res.ok) return alert(data.error || data.message || 'Delete failed');
+      await loadExpenses();
+    }
+
+    function fmtISO(d){
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    async function initViewing(){
+      await renderDailyView(0);
+      await renderMonthlyView(0);
+    }
+
+    async function renderDailyView(direction = 0){
+      if(!token){ alert('Please login first'); return; }
+      if(direction === 0){
+        viewDailyDate = startOfToday();
+      } else {
+        const next = new Date(viewDailyDate);
+        next.setDate(next.getDate() + direction);
+        next.setHours(0,0,0,0);
+        viewDailyDate = next;
+      }
+      const iso = fmtISO(viewDailyDate);
+
+      document.getElementById('dailyHeader').textContent = `Daily Track — ${iso}`;
+      document.getElementById('dailyTotal').textContent = '...';
+      document.getElementById('dailyCats').innerHTML = '';
+      document.getElementById('dailyList').innerHTML = '';
+
+      let data = {};
+      try{
+        const res = await fetch(`${API_URL}/view/daily?date=${iso}`, {
+          headers:{ 'Authorization':`Bearer ${token}` }
+        });
+        data = await res.json();
+      }catch(e){ data = {}; }
+
+      document.getElementById('dailyTotal').textContent = (Number(data.total || 0)).toFixed(2);
+
+      const cats = document.getElementById('dailyCats');
+      (data.byCategory||[]).forEach(c=>{
+        const span = document.createElement('span'); span.className='chip';
+        span.textContent = `${c.category}: ${Number(c.total).toFixed(0)} (${c.count})`;
+        cats.appendChild(span);
+      });
+
+      const list = document.getElementById('dailyList');
+      (data.items||[]).forEach(e=>{
+        const li = document.createElement('li'); li.className='item';
+        li.innerHTML = `
+          <div>${new Date(e.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+          <div>${e.description}</div>
+          <div>${e.category}</div>
+          <div class="right">${Number(e.amount).toFixed(2)}</div>
+          <div></div>
+        `;
+        list.appendChild(li);
+      });
+
+      if((data.items||[]).length === 0){
+        const li = document.createElement('li'); li.className='item';
+        li.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);">No expenses</div>';
+        list.appendChild(li);
+      }
+    }
+
+    async function renderMonthlyView(monthShift = 0){
+      if(!token) return;
+      if(monthShift === 0){
+        const now = new Date();
+        viewMonthYear = now.getFullYear();
+        viewMonthIndex = now.getMonth();
+      } else {
+        const d = new Date(viewMonthYear, viewMonthIndex + monthShift, 1);
+        viewMonthYear = d.getFullYear(); viewMonthIndex = d.getMonth();
+      }
+      const y = viewMonthYear; const m1 = viewMonthIndex + 1;
+
+      const res = await fetch(`${API_URL}/view/monthly?year=${y}&month=${m1}`, {
+        headers:{ 'Authorization':`Bearer ${token}` }
+      });
+      let data={}; try{ data = await res.json(); }catch{}
+
+      const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      document.getElementById('monthlyHeader').textContent = `Monthly Track — ${monthNames[viewMonthIndex]} ${viewMonthYear}`;
+      document.getElementById('monthlyTotal').textContent = (Number(data.total || 0)).toFixed(2);
+
+      const mc = document.getElementById('monthCats'); mc.innerHTML='';
+      (data.byCategory||[]).forEach(c=>{
+        const span=document.createElement('span'); span.className='chip';
+        span.textContent = `${c.category}: ${Number(c.total).toFixed(0)} (${c.count})`; mc.appendChild(span);
+      });
+
+      const md = document.getElementById('monthDays'); md.innerHTML='';
+      (data.byDay||[]).forEach(d=>{
+        const li=document.createElement('li'); li.className='item';
+        li.style.gridTemplateColumns = "1fr 1fr 0 0 0";
+        li.innerHTML = `
+          <div>Day ${d.day}</div>
+          <div class="right" style="font-weight:700;color:#fbbf24;">${Number(d.total).toFixed(2)}</div>
+          <div></div><div></div><div></div>
+        `;
+        md.appendChild(li);
+      });
+
+      if((data.byDay||[]).length === 0){
+        const li=document.createElement('li'); li.className='item';
+        li.innerHTML='<div style="grid-column:1/-1;color:var(--muted);">No expenses this month</div>';
+        md.appendChild(li);
+      }
+    }
+
+    async function refreshSummaries(){
+      if(!token) return;
+      const res = await fetch(`${API_URL}/expenses`, { headers:{ 'Authorization':`Bearer ${token}` }});
+      const expenses = await res.json();
+      const today = new Date().toDateString();
+      const m = new Date().getMonth(), y = new Date().getFullYear();
+      let todayTotal=0, monthTotal=0;
+      expenses.forEach(e=>{
+        const d=new Date(e.date);
+        if(d.toDateString()===today) todayTotal+=e.amount;
+        if(d.getMonth()===m && d.getFullYear()===y) monthTotal+=e.amount;
+      });
+      // you could wire these values to extra KPIs if needed
+    }
+
+    function presetRange(kind){
+      const now = new Date(); let from, to;
+      if(kind==='thisMonth'){ from=new Date(now.getFullYear(), now.getMonth(), 1); to=new Date(now.getFullYear(), now.getMonth()+1, 0); }
+      else if(kind==='lastMonth'){ const d=new Date(now.getFullYear(), now.getMonth()-1, 1); from=d; to=new Date(d.getFullYear(), d.getMonth()+1, 0); }
+      else { to=now; from=new Date(now); from.setDate(now.getDate()-89); }
+      document.getElementById('rFrom').value = from.toISOString().slice(0,10);
+      document.getElementById('rTo').value   = to.toISOString().slice(0,10);
+    }
+
+    async function loadReport(){
+      if(!token) return;
+      const from = document.getElementById('rFrom').value;
+      const to   = document.getElementById('rTo').value;
+      const res = await fetch(`${API_URL}/expenses`, { headers:{ 'Authorization':`Bearer ${token}` }});
+      const all = await res.json();
+      let items = all;
+
+      if(from){ const f=new Date(from); items = items.filter(e => new Date(e.date) >= f); }
+      if(to){ const t=new Date(to); t.setHours(23,59,59,999); items = items.filter(e => new Date(e.date) <= t); }
+
+      const total = items.reduce((s,e)=>s+(e.amount||0),0);
+      const days = from && to
+        ? Math.max(1, Math.round((new Date(to).setHours(0,0,0,0) - new Date(from).setHours(0,0,0,0))/86400000) + 1)
+        : 1;
+      const largest = items.reduce((m,e)=>Math.max(m, e.amount||0), 0);
+      const byCat = new Map();
+      items.forEach(e => byCat.set(e.category||'Other', (byCat.get(e.category||'Other')||0) + (e.amount||0)));
+
+      document.getElementById('rpTotal').textContent   = total.toFixed(2);
+      document.getElementById('rpAvgDay').textContent  = (total/days).toFixed(2);
+      document.getElementById('rpCount').textContent   = items.length;
+      document.getElementById('rpLargest').textContent = largest.toFixed(2);
+
+      const rpCats = document.getElementById('rpCats'); rpCats.innerHTML='';
+      [...byCat.entries()]
+        .sort((a,b)=>b[1]-a[1])
+        .forEach(([cat,sum])=>{
+          const span = document.createElement('span');
+          span.className = 'chip';
+          span.textContent = `${cat}: ${sum.toFixed(0)}`;
+          rpCats.appendChild(span);
+        });
+
+      document.getElementById('rpRaw').textContent = ''; // keep JSON hidden
+    }
+
+    function toCSV(rows){
+      const cols = ['date','description','category','amount'];
+      const header = cols.join(',');
+      const lines = rows.map(r => {
+        const date = new Date(r.date).toISOString();
+        const desc = (r.description||'').replace(/"/g,'""');
+        const cat  = (r.category||'').replace(/"/g,'""');
+        return `"${date}","${desc}","${cat}",${Number(r.amount||0).toFixed(2)}`;
+      });
+      return [header, ...lines].join('\n');
+    }
+
+    async function downloadCSV(){
+      if(!token) return;
+      const from = document.getElementById('rFrom').value;
+      const to   = document.getElementById('rTo').value;
+      const res = await fetch(`${API_URL}/expenses`, { headers:{ 'Authorization':`Bearer ${token}` }});
+      let items = await res.json();
+      if(from){ const f=new Date(from); items = items.filter(e => new Date(e.date) >= f); }
+      if(to){ const t=new Date(to); t.setHours(23,59,59,999); items = items.filter(e => new Date(e.date) <= t); }
+      const csv = toCSV(items);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'expenses.csv'; a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
