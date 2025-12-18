@@ -1,45 +1,10 @@
-# Node modules
-node_modules/
+# Node dependencies
 backend/node_modules/
-frontend/node_modules/
+
+# VS Code
+.vscode/
 
 # Logs
-logs/
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# Environment files (secrets)
-.env
-.env.*
-.env.local
-.env.*.local
-.env.txt
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# IDEs / editors
-.vscode/
-.idea/
-*.sublime-workspace
-*.sublime-project
-
-# Build / output
-dist/
-build/
-coverage/
-*.tgz
-
-# Database / runtime files
-*.sqlite
-*.db
-*.db-journal
-pids/
-*.pid
-*.seed
-
-# Misc
-*.log
